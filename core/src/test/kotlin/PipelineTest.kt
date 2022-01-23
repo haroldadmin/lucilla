@@ -2,7 +2,7 @@ package com.haroldadmin.lucilla.core
 
 import com.haroldadmin.lucilla.core.text.LowercaseTransform
 import com.haroldadmin.lucilla.core.text.StripPunctuationTransform
-import com.haroldadmin.lucilla.core.text.WhitespaceTokenizer
+import com.haroldadmin.lucilla.core.text.Tokenizer
 import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainAll
@@ -20,15 +20,15 @@ class PipelineTest : DescribeSpec({
     it("should run the input through every step of the pipeline") {
         val input = "El plan is working!"
         val output = Pipeline
-                .of(LowercaseTransform, StripPunctuationTransform, WhitespaceTokenizer)
-                .process(input)
+            .of(LowercaseTransform, StripPunctuationTransform, Tokenizer)
+            .process(input)
         output shouldContainAll listOf("el", "plan", "is", "working")
     }
 
     it("should throw an error if a pipeline step throws an error") {
         val input = "El plan is working"
         shouldThrowAny {
-            Pipeline.of({ throw Error("test")}).process(input)
+            Pipeline.of({ throw Error("test") }).process(input)
         }
     }
 

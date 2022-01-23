@@ -32,6 +32,5 @@ internal fun generateBooks(): Sequence<Book> {
                 .split(";")
                 .map { v -> v.substring(1 until v.length - 1) }
             Book(index, title, author, publisher)
-
         }
 }

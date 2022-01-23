@@ -1,0 +1,29 @@
+name: Build Project
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [8, 11, 16]
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v2
+
+      - name: Configure JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: ${{ matrix.java-version }}
+
+      - name: Run Tests
+        run: ./gradlew check

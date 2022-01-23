@@ -6,6 +6,6 @@ import io.kotest.matchers.shouldBe
 class TokenizerTest : DescribeSpec({
     it("should tokenize input") {
         val input = "Valtteri, it's James"
-        WhitespaceTokenizer.process(input) shouldBe input.split(" ")
+        Tokenizer.process(input) shouldBe input.split(" ")
     }
 })

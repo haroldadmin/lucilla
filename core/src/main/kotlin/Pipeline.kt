@@ -3,7 +3,7 @@ package com.haroldadmin.lucilla.core
 import com.haroldadmin.lucilla.core.text.LowercaseTransform
 import com.haroldadmin.lucilla.core.text.PorterStemmer
 import com.haroldadmin.lucilla.core.text.StripPunctuationTransform
-import com.haroldadmin.lucilla.core.text.WhitespaceTokenizer
+import com.haroldadmin.lucilla.core.text.Tokenizer
 
 /**
  * A step in text processing [Pipeline] to ingest
@@ -36,7 +36,7 @@ public class Pipeline(
             listOf(
                 LowercaseTransform,
                 StripPunctuationTransform,
-                WhitespaceTokenizer,
+                Tokenizer,
                 PorterStemmer
             )
         )
