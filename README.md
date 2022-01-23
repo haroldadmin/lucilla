@@ -26,6 +26,7 @@ index.search("Martian").map { searchResult ->
 
 ## Features
 
+- PATRICIA Trie based space efficient FTS index
 - Advanced text processing pipeline with support for Tokenization, Stemming, Punctuation removal and more.
 - Extensible text processing with custom pipeline steps
 - Search results ranking using [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) scores 
@@ -101,6 +102,28 @@ showResults(books)
 
 Lucilla runs every search query through a text processing pipeline to extract searchable tokens from it. The tokens may not reflect the search query exactly. 
 To find which token of your search query matched with a given search result, use the "matchTerm" property on a search result.
+
+## Installation
+
+Add the Jitpack repository to your list of repositories:
+
+```groovy
+// Project level build.gradle file
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+And then add the dependency in your gradle file:
+
+```groovy
+// Module build.gradle file
+dependencies {
+    implementation "com.github.haroldadmin.lucilla:core:(latest-version)"
+}
+```
 
 ## Contributing
 
