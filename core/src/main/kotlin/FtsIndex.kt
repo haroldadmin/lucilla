@@ -264,8 +264,20 @@ public class FtsIndex<DocType : Any>(
     }
 }
 
+/**
+ * Creates an FTS index
+ *
+ * @param T The type of documents to be stored in the index
+ * @param docs Seed data to add to the index
+ * @param pipeline A custom text processing pipeline, if any
+ * @return An FTS index with the given pipeline and seed data (if any)
+ */
 public fun <T : Any> useFts(
+    docs: List<T>? = null,
     pipeline: Pipeline = Pipeline.Default
 ): FtsIndex<T> {
-    return FtsIndex(pipeline)
+    val index = FtsIndex<T>(pipeline)
+    docs?.forEach { index.add(it) }
+
+    return index
 }
