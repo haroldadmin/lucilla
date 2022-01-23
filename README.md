@@ -24,6 +24,8 @@ index.search("Martian").map { searchResult ->
 }
 ```
 
+> Lucilla is in active development. It's an early stage prototype, and not suitable for production use yet.
+
 ## Features
 
 - PATRICIA Trie based space efficient FTS index
