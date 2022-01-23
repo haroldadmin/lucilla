@@ -130,6 +130,8 @@ dependencies {
 }
 ```
 
+[![Jitpack](https://jitpack.io/v/haroldadmin/lucilla.svg)](https://jitpack.io/#haroldadmin/lucilla)
+
 ## Contributing
 
 lucilla is in active development and does not promise API stability. Expect the library to undergo significant changes before it reaches stable status.
