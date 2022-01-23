@@ -1,5 +1,8 @@
 # Lucilla
 
+[![Build](https://github.com/haroldadmin/lucilla/actions/workflows/build.yaml/badge.svg)](https://github.com/haroldadmin/lucilla/actions/workflows/build.yaml)
+[![Jitpack](https://jitpack.io/v/haroldadmin/lucilla.svg)](https://jitpack.io/#haroldadmin/lucilla)
+
 Lucilla is an in-memory Full Text Search library for Kotlin.
 
 It allows to you to build a Full Text Search index for data that does not need to be persisted to a database.
