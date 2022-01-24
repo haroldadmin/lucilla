@@ -1,5 +1,8 @@
 package com.haroldadmin.lucilla.core
 
+import com.haroldadmin.lucilla.core.ir.extractDocumentId
+import com.haroldadmin.lucilla.core.ir.extractProperties
+import com.haroldadmin.lucilla.core.ir.extractTokens
 import com.haroldadmin.lucilla.core.rank.documentFrequency
 import com.haroldadmin.lucilla.core.rank.termFrequency
 import com.haroldadmin.lucilla.core.rank.tfIdf
@@ -81,13 +84,16 @@ public class FtsIndex<DocType : Any>(
      * @return The number of tokens added to the index from the document
      */
     public fun add(doc: DocType): Int {
-        val docId = extractDocId(doc)
+        val docId = extractDocumentId(doc)
         if (docId in docs) {
             return 0
         }
 
         val docProps = extractProperties(doc)
-        val docTokens = extractTokens(docProps)
+        val docTokens = docProps
+            .map { prop -> extractTokens(prop, pipeline) }
+            .flatten()
+
         docTokens.forEach { token ->
             val docFrequencies = _index[token] ?: mutableMapOf()
             val tokenFrequency = docFrequencies.getOrDefault(docId, 0) + 1
@@ -116,13 +122,15 @@ public class FtsIndex<DocType : Any>(
      * @param doc The document to remove from the index
      */
     public fun remove(doc: DocType) {
-        val docId = extractDocId(doc)
+        val docId = extractDocumentId(doc)
         if (docId !in docs) {
             return
         }
 
         val docProps = extractProperties(doc)
-        val docTokens = extractTokens(docProps)
+        val docTokens = docProps
+            .map { prop -> extractTokens(prop, pipeline) }
+            .flatten()
 
         for (token in docTokens) {
             val docFrequencies = _index[token]
@@ -175,76 +183,6 @@ public class FtsIndex<DocType : Any>(
 
         results.sortByDescending { result -> result.score }
         return results
-    }
-
-    /**
-     * Extract the ID from the document's properties.
-     *
-     * The document MUST have an [Id] annotated property/method that
-     * returns an [Int].
-     *
-     * Example:
-     * ```kt
-     * data class Document(
-     *   @Id
-     *   val id: Int,
-     *   val name: String
-     * )
-     *
-     * val doc = Document(1, "First")
-     * extractDocId(doc) // 1
-     * ```
-     */
-    private fun extractDocId(doc: DocType): Int {
-        val idCallable = doc::class.members.find { callable -> callable.hasAnnotation<Id>() }
-
-        requireNotNull(idCallable) { "$doc does not have any property/method annotated with '@Id'" }
-        require(idCallable.returnType.isSubtypeOf(typeOf<Int>())) { "'@Id' annotated property/method must return an Int" }
-
-        return idCallable.call(doc) as Int
-    }
-
-    /**
-     * Extracts the values of the given document's properties that contribute
-     * to the FTS index.
-     *
-     * Example:
-     * ```kt
-     * data class Document(
-     *   val title: String,
-     *   @Ignore
-     *   val abstract: String,
-     *   val author: String,
-     * )
-     *
-     * val doc = Document("Foo", "bar", "baz)
-     * getDocProperties(doc) // ["Foo", "baz"]
-     * ```
-     *
-     * @param doc The document to extract property values from
-     * @return List of the document's property values
-     */
-    private fun extractProperties(doc: DocType): List<String> {
-        return doc::class.declaredMemberProperties
-            .filterNot { prop -> prop.hasAnnotation<Ignore>() || prop.hasAnnotation<Id>() }
-            .mapNotNull { prop -> prop.getter.call(doc)?.toString() }
-    }
-
-    /**
-     * Extracts a [Set] of tokens from the given list of Strings.
-     *
-     * Every given string is passed through the text processing pipeline
-     * to produce a list of tokens. All such tokens are merged into a single
-     * set to remove duplicates.
-     *
-     * @param values The list of strings to extract tokens from
-     * @return A set of unique tokens extracted from the given strings
-     */
-    private fun extractTokens(values: List<String>): Set<String> {
-        return values
-            .map { value -> pipeline.process(value) }
-            .flatten()
-            .toSet()
     }
 
     /**
