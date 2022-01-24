@@ -8,22 +8,63 @@ import com.haroldadmin.lucilla.core.rank.termFrequency
 import com.haroldadmin.lucilla.core.rank.tfIdf
 import org.apache.commons.collections4.Trie
 import org.apache.commons.collections4.trie.PatriciaTrie
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.typeOf
 
+/**
+ * Result of a search query
+ */
 public data class SearchResult(
+    /**
+     * ID of the matched document
+     */
     val documentId: Int,
+
+    /**
+     * Score of the match. Higher score implies a better
+     * match.
+     */
     val score: Double,
+
+    /**
+     * The fragment of the search query that matched against
+     * this search result
+     */
     val matchTerm: String,
 )
 
+/**
+ * Alias for [Map] that models a token's frequency of appearance in documents
+ *
+ * Key = Document ID
+ * Value = Frequency of the token in the document
+ */
 internal typealias DocumentFrequencies = MutableMap<Int, Int>
+
+/**
+ * Alias for a token in a document
+ */
 internal typealias Token = String
+
+/**
+ * Alias for a [Map] that maps a document token against frequencies of that token
+ * in all documents.
+ */
 internal typealias InvertedIndex = Map<Token, DocumentFrequencies>
+
+/**
+ * Mutable variant of [InvertedIndex].
+ *
+ * Backed by a [PatriciaTrie] for efficient space utilisation.
+ */
 internal typealias MutableInvertedIndex = Trie<Token, DocumentFrequencies>
 
+/**
+ * A Full Text Search index for fast and efficient
+ * information retrieval.
+ *
+ * - Add documents to the index using [add], and search using [search].
+ * - To customise the text processing rules, create a custom [Pipeline] and
+ * pass it as the [pipeline] parameter
+ */
 public class FtsIndex<DocType : Any>(
     public val pipeline: Pipeline
 ) {

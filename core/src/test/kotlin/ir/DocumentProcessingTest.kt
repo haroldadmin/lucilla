@@ -10,7 +10,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
-class DocumentProcessingTest: DescribeSpec({
+class DocumentProcessingTest : DescribeSpec({
     describe("extractDocumentId") {
         it("should extract ID from a document with @Id prop") {
             data class Doc(

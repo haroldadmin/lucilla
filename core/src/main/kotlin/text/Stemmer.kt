@@ -7,7 +7,9 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM as SnowballStemm
 
 /**
  * A [PipelineStep] that stems the input text using the Porter Stemmer
- * Algorithm
+ * Algorithm.
+ *
+ * Based on the Apache Open NLP [ApachePorterStemmer].
  */
 public object PorterStemmer : PipelineStep {
     private val stemmer = ApachePorterStemmer()
@@ -30,6 +32,8 @@ public object PorterStemmer : PipelineStep {
 /**
  * A [PipelineStep] that stems the input text using the Snowball
  * stemming algorithm.
+ *
+ * Based on the Apache Open NLP [ApacheSnowballStemmer]
  */
 public class SnowballStemmer(
     algorithm: SnowballStemmerAlgorithm = SnowballStemmerAlgorithm.ENGLISH,

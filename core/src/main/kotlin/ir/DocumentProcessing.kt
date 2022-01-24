@@ -3,12 +3,10 @@ package com.haroldadmin.lucilla.core.ir
 import com.haroldadmin.lucilla.core.Id
 import com.haroldadmin.lucilla.core.Ignore
 import com.haroldadmin.lucilla.core.Pipeline
-import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.typeOf
 
 private val IntType = typeOf<Int>()
