@@ -1,4 +1,4 @@
-package com.haroldadmin.lucilla.core
+package com.haroldadmin.lucilla.annotations
 
 /**
  * Marks a field of a document to be excluded from the FTS index

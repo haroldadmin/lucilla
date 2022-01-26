@@ -1,6 +1,6 @@
-package com.haroldadmin.lucilla.core.text
+package com.haroldadmin.lucilla.pipeline.transforms
 
-import com.haroldadmin.lucilla.core.PipelineStep
+import com.haroldadmin.lucilla.pipeline.PipelineStep
 import opennlp.tools.stemmer.PorterStemmer as ApachePorterStemmer
 import opennlp.tools.stemmer.snowball.SnowballStemmer as ApacheSnowballStemmer
 import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM as SnowballStemmerAlgorithm

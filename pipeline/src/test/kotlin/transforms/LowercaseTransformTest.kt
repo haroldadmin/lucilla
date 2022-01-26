@@ -1,4 +1,4 @@
-package com.haroldadmin.lucilla.core.text
+package com.haroldadmin.lucilla.pipeline.transforms
 
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.string.shouldContain

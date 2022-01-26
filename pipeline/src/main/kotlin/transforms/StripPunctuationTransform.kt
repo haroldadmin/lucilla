@@ -1,6 +1,6 @@
-package com.haroldadmin.lucilla.core.text
+package com.haroldadmin.lucilla.pipeline.transforms
 
-import com.haroldadmin.lucilla.core.PipelineStep
+import com.haroldadmin.lucilla.pipeline.PipelineStep
 
 /**
  * A [PipelineStep] that removes punctuation symbols from the

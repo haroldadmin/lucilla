@@ -1,8 +1,8 @@
-package com.haroldadmin.lucilla.core.ir
+package com.haroldadmin.lucilla.ir
 
-import com.haroldadmin.lucilla.core.Id
-import com.haroldadmin.lucilla.core.Ignore
-import com.haroldadmin.lucilla.core.Pipeline
+import com.haroldadmin.lucilla.annotations.Id
+import com.haroldadmin.lucilla.annotations.Ignore
+import com.haroldadmin.lucilla.pipeline.Pipeline
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactly

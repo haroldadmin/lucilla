@@ -1,11 +1,12 @@
 package com.haroldadmin.lucilla.core
 
-import com.haroldadmin.lucilla.core.ir.extractDocumentId
-import com.haroldadmin.lucilla.core.ir.extractProperties
-import com.haroldadmin.lucilla.core.ir.extractTokens
+import com.haroldadmin.lucilla.ir.extractDocumentId
+import com.haroldadmin.lucilla.ir.extractProperties
+import com.haroldadmin.lucilla.ir.extractTokens
 import com.haroldadmin.lucilla.core.rank.documentFrequency
 import com.haroldadmin.lucilla.core.rank.termFrequency
 import com.haroldadmin.lucilla.core.rank.tfIdf
+import com.haroldadmin.lucilla.pipeline.Pipeline
 import org.apache.commons.collections4.Trie
 import org.apache.commons.collections4.trie.PatriciaTrie
 
@@ -112,7 +113,7 @@ public class FtsIndex<DocType : Any>(
      * This method adds the document to the index as follows:
      *
      * 1. Extracts all member properties of the documents and filters the ones marked with
-     * [Ignore] and [Id]
+     * [com.haroldadmin.lucilla.annotations.Ignore] and [com.haroldadmin.lucilla.annotations.Id]
      * 2. Converts each extracted property to its value as a string
      * 3. Runs the string value through the Text Processing [Pipeline] to extract tokens
      * from the document.
@@ -224,6 +225,14 @@ public class FtsIndex<DocType : Any>(
 
         results.sortByDescending { result -> result.score }
         return results
+    }
+
+    /**
+     * Clears all documents added to the FTS index
+     */
+    public fun clear() {
+        this.docs.clear()
+        this._index.clear()
     }
 
     /**

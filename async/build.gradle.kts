@@ -1,10 +1,10 @@
 plugins {
     kotlin("jvm")
-    `maven-publish`
     id("org.jlleitschuh.gradle.ktlint")
+    `maven-publish`
 }
 
-val artifactID = "core"
+val artifactID = "async"
 val groupID by extra("groupId")
 val projectName by extra("projectName")
 val projectVersion by extra("projectVersion")
@@ -23,7 +23,7 @@ tasks.withType<Test> {
 
 publishing {
     publications {
-        create<MavenPublication>("lucilla-core") {
+        create<MavenPublication>("lucilla-async") {
             groupId = groupID
             artifactId = artifactID
             version = projectVersion
@@ -34,13 +34,8 @@ publishing {
 }
 
 dependencies {
-    api(project(":annotations"))
-    api(project(":ir"))
-    api(project(":pipeline"))
-
-    implementation(libs.kotlinReflect)
-    implementation(libs.apacheCommonsCollection)
-    implementation(libs.apacheOpenNlp)
+    api(project(":core"))
+    implementation(libs.kotlinCoroutines)
 
     testImplementation(libs.kotestRunner)
     testImplementation(libs.kotestAssertions)
