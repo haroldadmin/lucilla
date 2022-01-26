@@ -1,0 +1,5 @@
+{
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/kshitij/Projects/Kotlin/lucilla/.github/workflows/build.yaml"
+  }
+}
