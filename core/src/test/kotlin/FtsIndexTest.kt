@@ -1,5 +1,6 @@
 package com.haroldadmin.lucilla.core
 
+import com.haroldadmin.lucilla.annotations.Id
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder

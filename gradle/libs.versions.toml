@@ -1,0 +1,21 @@
+[versions]
+kotlin = "1.6.10"
+kotlinCoroutines = "1.6.0"
+kotlinxBenchmark = "0.4.2"
+
+apacheCommonsCollection = "4.4"
+apacheOpenNlp = "1.9.4"
+
+kotest = "5.0.3"
+
+[libraries]
+kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlinCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+kotlinxBenchmark = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
+
+apacheCommonsCollection = { module = "org.apache.commons:commons-collections4", version.ref = "apacheCommonsCollection" }
+apacheOpenNlp = { module = "org.apache.opennlp:opennlp-tools", version.ref = "apacheOpenNlp" }
+
+kotestRunner = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+

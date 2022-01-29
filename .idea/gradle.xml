@@ -10,7 +10,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/annotations" />
+            <option value="$PROJECT_DIR$/benchmarks" />
             <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/ir" />
+            <option value="$PROJECT_DIR$/pipeline" />
           </set>
         </option>
       </GradleProjectSettings>

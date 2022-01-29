@@ -13,10 +13,10 @@ kotlin {
 
 publishing {
     publications {
-        create<MavenPublication>("lucilla-core") {
+        create<MavenPublication>("lucilla-pipeline") {
             version = "0.0.1"
             groupId = "com.github.haroldadmin.lucilla"
-            artifactId = "core"
+            artifactId = "pipeline"
 
             from(components["java"])
         }
@@ -28,13 +28,7 @@ tasks.withType<Test> {
 }
 
 dependencies {
-    api(project(":annotations"))
-    api(project(":ir"))
-    api(project(":pipeline"))
-
-    implementation(libs.kotlinReflect)
-    implementation(libs.apacheCommonsCollection)
-    implementation(libs.apacheOpenNlp)
+    api(libs.apacheOpenNlp)
 
     testImplementation(libs.kotestRunner)
     testImplementation(libs.kotestAssertions)

@@ -1,9 +1,9 @@
-package com.haroldadmin.lucilla.core
+package com.haroldadmin.lucilla.pipeline
 
-import com.haroldadmin.lucilla.core.text.LowercaseTransform
-import com.haroldadmin.lucilla.core.text.PorterStemmer
-import com.haroldadmin.lucilla.core.text.StripPunctuationTransform
-import com.haroldadmin.lucilla.core.text.Tokenizer
+import com.haroldadmin.lucilla.pipeline.transforms.LowercaseTransform
+import com.haroldadmin.lucilla.pipeline.transforms.PorterStemmer
+import com.haroldadmin.lucilla.pipeline.transforms.StripPunctuationTransform
+import com.haroldadmin.lucilla.pipeline.transforms.Tokenizer
 
 /**
  * A step in text processing [Pipeline] to ingest

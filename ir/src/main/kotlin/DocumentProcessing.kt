@@ -1,8 +1,8 @@
-package com.haroldadmin.lucilla.core.ir
+package com.haroldadmin.lucilla.ir
 
-import com.haroldadmin.lucilla.core.Id
-import com.haroldadmin.lucilla.core.Ignore
-import com.haroldadmin.lucilla.core.Pipeline
+import com.haroldadmin.lucilla.annotations.Id
+import com.haroldadmin.lucilla.annotations.Ignore
+import com.haroldadmin.lucilla.pipeline.Pipeline
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.hasAnnotation
@@ -23,7 +23,7 @@ private val StringType = typeOf<String>()
  * @param doc The document to extract the ID of
  * @return Value of the ID annotated property
  */
-internal fun <T : Any> extractDocumentId(doc: T): Int {
+public fun <T : Any> extractDocumentId(doc: T): Int {
     val docName = doc::class.simpleName ?: "Document"
     val idProps = doc::class.declaredMembers.filter { member -> member.hasAnnotation<Id>() }
 
@@ -60,7 +60,7 @@ internal fun <T : Any> extractDocumentId(doc: T): Int {
  * @param doc The document to extract properties from
  * @return Values of extracted properties from the document
  */
-internal fun <T : Any> extractProperties(doc: T): List<String> {
+public fun <T : Any> extractProperties(doc: T): List<String> {
     return doc::class.declaredMemberProperties
         .filterNot { prop -> prop.hasAnnotation<Id>() || prop.hasAnnotation<Ignore>() }
         .filter { prop -> prop.returnType.isSubtypeOf(StringType) }
@@ -74,6 +74,6 @@ internal fun <T : Any> extractProperties(doc: T): List<String> {
  * @param pipeline The text processing pipeline to run this data through
  * @return Tokens extracted from the given data
  */
-internal fun extractTokens(data: String, pipeline: Pipeline): List<String> {
+public fun extractTokens(data: String, pipeline: Pipeline): List<String> {
     return pipeline.process(data)
 }

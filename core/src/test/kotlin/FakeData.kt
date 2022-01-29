@@ -1,5 +1,7 @@
 package com.haroldadmin.lucilla.core
 
+import com.haroldadmin.lucilla.annotations.Id
+import com.haroldadmin.lucilla.annotations.Ignore
 import java.io.File
 
 data class Sentence(@Id val line: Int, val value: String)
@@ -27,7 +29,7 @@ internal fun generateBooks(): Sequence<Book> {
     return file.bufferedReader()
         .lineSequence()
         .drop(1)
-        .mapIndexedNotNull { index, bookData ->
+        .mapIndexed { index, bookData ->
             val (_, title, author, _, publisher) = bookData
                 .split(";")
                 .map { v -> v.substring(1 until v.length - 1) }
