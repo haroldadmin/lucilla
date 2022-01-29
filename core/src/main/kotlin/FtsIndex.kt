@@ -47,16 +47,36 @@ internal typealias Token = String
 
 /**
  * Alias for a [Map] that maps a document token against frequencies of that token
- * in all documents.
+ * in all documents according to each property of the document
+ *
+ * Example:
+ * ```kotlin
+ * data class Doc(val name: String, val author: String)
+ * ```
+ * can be visualised as:
+ *
+ * ```json
+ * {
+ *   "<some-token>": {
+ *     "name": {
+ *       "<doc-id>": "<frequency>",
+ *     },
+ *     "author": {
+ *       "<doc-id>": "<frequency>"
+ *     }
+ *   }
+ * }
+ * ```
+ * ```
  */
-internal typealias InvertedIndex = Map<Token, DocumentFrequencies>
+internal typealias InvertedIndex = Map<Token, Map<String, DocumentFrequencies>>
 
 /**
  * Mutable variant of [InvertedIndex].
  *
  * Backed by a [PatriciaTrie] for efficient space utilisation.
  */
-internal typealias MutableInvertedIndex = Trie<Token, DocumentFrequencies>
+internal typealias MutableInvertedIndex = Trie<Token, MutableMap<String, DocumentFrequencies>>
 
 /**
  * A Full Text Search index for fast and efficient
@@ -84,15 +104,15 @@ public class FtsIndex<DocType : Any>(
         get() = _index
 
     /**
-     * Set of documents present in the index, along with the number of tokens in
-     * each doc.
+     * Map of all documents present in the index, along with the token lengths of
+     * each document's properties.
      *
-     * We store the token length of a document for calculating match scores.
+     * We store the token length of a document's properties for calculating match scores.
      * If a search term occurs in two documents just once, both of them will get the
      * same score. To distinguish between the quality of match between the two,
-     * we divide their score with the number of tokens in each doc.
+     * we divide their score with the number of tokens in each doc's properties.
      */
-    private val docs: MutableMap<Int, Int> = mutableMapOf()
+    private val docs: MutableMap<Int, Map<String, Int>> = mutableMapOf()
 
     /**
      * Number of documents in the index
@@ -117,7 +137,8 @@ public class FtsIndex<DocType : Any>(
      * 2. Converts each extracted property to its value as a string
      * 3. Runs the string value through the Text Processing [Pipeline] to extract tokens
      * from the document.
-     * 4. Add each token as a key to the index, with the value set to its document frequencies
+     * 4. Add each token as a key to the index, with the value set to its property
+     * specific document frequencies
      *
      * Returns without modifying the index if a document with the given ID is already
      * present in the index.
@@ -132,22 +153,32 @@ public class FtsIndex<DocType : Any>(
         }
 
         val docProps = extractProperties(doc)
-        val docTokens = docProps
-            .map { prop -> extractTokens(prop, pipeline) }
-            .flatten()
-
-        docTokens.forEach { token ->
-            val docFrequencies = _index[token] ?: mutableMapOf()
-            val tokenFrequency = docFrequencies.getOrDefault(docId, 0) + 1
-            docFrequencies[docId] = tokenFrequency
-
-            _index[token] = docFrequencies
+        val propsToTokens = docProps.associate { prop ->
+            val propValue = prop.call(doc)
+            val propTokens = extractTokens(propValue, pipeline)
+            prop.name to propTokens
         }
 
-        val docLength = docTokens.size
-        docs[docId] = docLength
+        var addedTokens = 0
+        for ((prop, tokens) in propsToTokens) {
+            for (token in tokens) {
+                val propsForToken = _index[token] ?: mutableMapOf<String, DocumentFrequencies>().also { addedTokens++ }
+                val docFrequenciesForProp = propsForToken[prop] ?: mutableMapOf()
+                val tokenFrequency = docFrequenciesForProp.getOrDefault(docId, 0) + 1
 
-        return docTokens.size
+                docFrequenciesForProp[docId] = tokenFrequency
+                propsForToken[prop] = docFrequenciesForProp
+                _index[token] = propsForToken
+            }
+        }
+
+        val propLengths = mutableMapOf<String, Int>()
+        for ((prop, tokens) in propsToTokens) {
+            propLengths[prop] = tokens.size
+        }
+        docs[docId] = propLengths
+
+        return addedTokens
     }
 
     /**
@@ -171,25 +202,39 @@ public class FtsIndex<DocType : Any>(
 
         val docProps = extractProperties(doc)
         val docTokens = docProps
-            .map { prop -> extractTokens(prop, pipeline) }
+            .map { prop ->
+                val propValue = prop.call(doc)
+                extractTokens(propValue, pipeline)
+            }
             .flatten()
 
         for (token in docTokens) {
-            val docFrequencies = _index[token]
-            if (docFrequencies == null || docFrequencies.isEmpty()) {
+            val tokenProps = _index[token]
+            if (tokenProps == null || tokenProps.isEmpty()) {
                 _index.remove(token)
                 continue
             }
 
-            val existingFrequency = docFrequencies.getOrDefault(docId, 0)
-            val newFrequency = existingFrequency - 1
-            docFrequencies[docId] = newFrequency
+            val propsToRemove = mutableListOf<String>()
+            for ((prop, documentFrequencies) in tokenProps) {
+                val existingFrequency = documentFrequencies.getOrDefault(docId, 0)
+                val newFrequency = existingFrequency - 1
+                documentFrequencies[docId] = newFrequency
 
-            if (newFrequency < 1) {
-                docFrequencies.remove(docId)
+                if (newFrequency < 1) {
+                    documentFrequencies.remove(docId)
+                }
+
+                if (documentFrequencies.isEmpty()) {
+                    propsToRemove.add(prop)
+                }
             }
 
-            if (docFrequencies.isEmpty()) {
+            for (prop in propsToRemove) {
+                tokenProps.remove(prop)
+            }
+
+            if (tokenProps.isEmpty()) {
                 _index.remove(token)
             }
         }
@@ -215,11 +260,14 @@ public class FtsIndex<DocType : Any>(
 
         val results = mutableListOf<SearchResult>()
         for (queryToken in queryTokens) {
-            val matchingDocs = _index[queryToken] ?: continue
-            for (docId in matchingDocs.keys) {
-                val score = score(queryToken, docId)
-                val result = SearchResult(docId, score, queryToken)
-                results.add(result)
+            val matchingProps = _index[queryToken] ?: continue
+            for ((prop, docFrequencies) in matchingProps) {
+                for (docId in docFrequencies.keys) {
+
+                    val score = score(queryToken, docId, prop)
+                    val result = SearchResult(docId, score, queryToken)
+                    results.add(result)
+                }
             }
         }
 
@@ -243,10 +291,10 @@ public class FtsIndex<DocType : Any>(
      * @param docId The document in which the term appears
      * @return The TF-IDF value for the term in the document
      */
-    private fun score(term: String, docId: Int): Double {
-        val docLength = docs[docId] ?: 0
-        val tf = termFrequency(term, docId, docLength, _index)
-        val df = documentFrequency(term, _index)
+    private fun score(term: String, docId: Int, prop: String): Double {
+        val propLength = docs[docId]?.get(prop) ?: 0
+        val tf = termFrequency(term, docId, propLength, _index, prop)
+        val df = documentFrequency(term, _index, prop)
         val n = docs.size
         return tfIdf(tf, df, n)
     }
