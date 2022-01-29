@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("org.jlleitschuh.gradle.ktlint")
+    `maven-publish`
 }
 
 repositories {
@@ -9,4 +9,16 @@ repositories {
 
 kotlin {
     explicitApi()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("lucilla-annotations") {
+            version = "0.0.1"
+            groupId = "com.github.haroldadmin.lucilla"
+            artifactId = "annotations"
+
+            from(components["java"])
+        }
+    }
 }

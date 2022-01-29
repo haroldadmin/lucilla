@@ -1,13 +1,7 @@
 plugins {
     kotlin("jvm")
     `maven-publish`
-    id("org.jlleitschuh.gradle.ktlint")
 }
-
-val artifactID = "core"
-val groupID by extra("groupId")
-val projectName by extra("projectName")
-val projectVersion by extra("projectVersion")
 
 repositories {
     mavenCentral()
@@ -17,20 +11,20 @@ kotlin {
     explicitApi()
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
 publishing {
     publications {
         create<MavenPublication>("lucilla-core") {
-            groupId = groupID
-            artifactId = artifactID
-            version = projectVersion
+            version = "0.0.1"
+            groupId = "com.github.haroldadmin.lucilla"
+            artifactId = "core"
 
             from(components["java"])
         }
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 dependencies {
