@@ -104,15 +104,15 @@ public class FtsIndex<DocType : Any>(
         get() = _index
 
     /**
-     * Set of documents present in the index, along with the number of tokens in
-     * each doc.
+     * Map of all documents present in the index, along with the token lengths of
+     * each document's properties.
      *
-     * We store the token length of a document for calculating match scores.
+     * We store the token length of a document's properties for calculating match scores.
      * If a search term occurs in two documents just once, both of them will get the
      * same score. To distinguish between the quality of match between the two,
-     * we divide their score with the number of tokens in each doc.
+     * we divide their score with the number of tokens in each doc's properties.
      */
-    private val docs: MutableMap<Int, Int> = mutableMapOf()
+    private val docs: MutableMap<Int, Map<String, Int>> = mutableMapOf()
 
     /**
      * Number of documents in the index
@@ -159,9 +159,10 @@ public class FtsIndex<DocType : Any>(
             prop.name to propTokens
         }
 
+        var addedTokens = 0
         for ((prop, tokens) in propsToTokens) {
             for (token in tokens) {
-                val propsForToken = _index[token] ?: mutableMapOf()
+                val propsForToken = _index[token] ?: mutableMapOf<String, DocumentFrequencies>().also { addedTokens++ }
                 val docFrequenciesForProp = propsForToken[prop] ?: mutableMapOf()
                 val tokenFrequency = docFrequenciesForProp.getOrDefault(docId, 0) + 1
 
@@ -171,10 +172,13 @@ public class FtsIndex<DocType : Any>(
             }
         }
 
-        val docLength = propsToTokens.values.sumOf { tokens -> tokens.size }
-        docs[docId] = docLength
+        val propLengths = mutableMapOf<String, Int>()
+        for ((prop, tokens) in propsToTokens) {
+            propLengths[prop] = tokens.size
+        }
+        docs[docId] = propLengths
 
-        return propsToTokens.size
+        return addedTokens
     }
 
     /**
@@ -259,6 +263,7 @@ public class FtsIndex<DocType : Any>(
             val matchingProps = _index[queryToken] ?: continue
             for ((prop, docFrequencies) in matchingProps) {
                 for (docId in docFrequencies.keys) {
+
                     val score = score(queryToken, docId, prop)
                     val result = SearchResult(docId, score, queryToken)
                     results.add(result)
@@ -287,8 +292,8 @@ public class FtsIndex<DocType : Any>(
      * @return The TF-IDF value for the term in the document
      */
     private fun score(term: String, docId: Int, prop: String): Double {
-        val docLength = docs[docId] ?: 0
-        val tf = termFrequency(term, docId, docLength, _index, prop)
+        val propLength = docs[docId]?.get(prop) ?: 0
+        val tf = termFrequency(term, docId, propLength, _index, prop)
         val df = documentFrequency(term, _index, prop)
         val n = docs.size
         return tfIdf(tf, df, n)
