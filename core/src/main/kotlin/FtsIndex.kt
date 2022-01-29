@@ -1,11 +1,11 @@
 package com.haroldadmin.lucilla.core
 
-import com.haroldadmin.lucilla.ir.extractDocumentId
-import com.haroldadmin.lucilla.ir.extractProperties
-import com.haroldadmin.lucilla.ir.extractTokens
 import com.haroldadmin.lucilla.core.rank.documentFrequency
 import com.haroldadmin.lucilla.core.rank.termFrequency
 import com.haroldadmin.lucilla.core.rank.tfIdf
+import com.haroldadmin.lucilla.ir.extractDocumentId
+import com.haroldadmin.lucilla.ir.extractProperties
+import com.haroldadmin.lucilla.ir.extractTokens
 import com.haroldadmin.lucilla.pipeline.Pipeline
 import org.apache.commons.collections4.Trie
 import org.apache.commons.collections4.trie.PatriciaTrie
