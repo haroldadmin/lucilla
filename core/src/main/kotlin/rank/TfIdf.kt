@@ -15,6 +15,7 @@ import kotlin.math.ln
  * @param docId The document to find the term's frequency in
  * @param docLength The length of the tokens in the document
  * @param index The FTS index
+ * @param prop The name of the document property to fetch document frequencies for
  * @return The scaled frequency of the term in the document
  */
 internal fun termFrequency(
@@ -22,8 +23,10 @@ internal fun termFrequency(
     docId: Int,
     docLength: Int,
     index: InvertedIndex,
+    prop: String,
 ): Double {
-    val docsWithTerm = index[term] ?: return 0.0
+    val propsWithTerm = index[term] ?: return 0.0
+    val docsWithTerm = propsWithTerm[prop] ?: return 0.0
     val rawTf = docsWithTerm[docId] ?: return 0.0
     return rawTf.toDouble() / docLength
 }
@@ -36,13 +39,16 @@ internal fun termFrequency(
  *
  * @param term The term to find the document frequency of
  * @param index The FTS index
+ * @param prop The prop to fetch docs for
  * @return The number of documents in which the term appears
  */
 internal fun documentFrequency(
     term: String,
     index: InvertedIndex,
+    prop: String,
 ): Int {
-    val docsWithTerm = index[term] ?: return 0
+    val propsWithTerm = index[term] ?: return 0
+    val docsWithTerm = propsWithTerm[prop] ?: return 0
     return docsWithTerm.keys.size
 }
 

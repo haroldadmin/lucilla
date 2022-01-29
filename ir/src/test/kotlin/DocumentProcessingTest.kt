@@ -73,44 +73,51 @@ class DocumentProcessingTest : DescribeSpec({
         it("should extract all relevant properties from a document") {
             data class Doc(val name: String, val author: String)
 
-            val props = extractProperties(Doc("Foo", "Bar"))
+            val doc = Doc("Foo", "Bar")
+            val props = extractProperties(doc).map { prop -> prop.call(doc) }
             props shouldContainExactlyInAnyOrder listOf("Foo", "Bar")
         }
 
         it("should ignore properties marked with @Ignore") {
             data class Doc(val name: String, @Ignore val author: String)
 
-            val props = extractProperties(Doc("Foo", "Bar"))
+            val doc = Doc("Foo", "Bar")
+            val props = extractProperties(doc).map { prop -> prop.call(doc) }
             props shouldContainExactly listOf("Foo")
         }
 
         it("should ignore properties that are not Strings") {
             data class Doc(val name: String, val year: Int)
 
-            val props = extractProperties(Doc("Foo", 2022))
+            val doc = Doc("Foo", 2022)
+            val props = extractProperties(doc).map { prop -> prop.call(doc) }
             props shouldContainExactly listOf("Foo")
         }
 
         it("should ignore member functions") {
             data class Doc(val name: String, val author: String) {
+                @Suppress("unused")
                 fun formattedName() = "$name $author"
             }
 
-            val props = extractProperties(Doc("Foo", "Bar"))
+            val doc = Doc("Foo", "Bar")
+            val props = extractProperties(doc).map { prop -> prop.call(doc) }
             props shouldContainExactlyInAnyOrder listOf("Foo", "Bar")
         }
 
         it("should ignore null properties") {
             data class Doc(val name: String?)
 
-            val props = extractProperties(Doc(null))
+            val doc = Doc(null)
+            val props = extractProperties(doc)
             props shouldHaveSize 0
         }
 
         it("should ignore properties marked with @Id") {
             data class Doc(@Id val id: String, val name: String)
 
-            val props = extractProperties(Doc("Foo", "Bar"))
+            val doc = Doc("Foo", "Bar")
+            val props = extractProperties(doc).map { prop -> prop.call(doc) }
             props shouldContainExactly listOf("Bar")
         }
     }

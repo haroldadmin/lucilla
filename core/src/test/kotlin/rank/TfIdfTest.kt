@@ -18,7 +18,8 @@ class TfIdfTest : DescribeSpec({
                 term = "michael",
                 docId = sentence.line,
                 docLength = sentenceTokens.size,
-                index = index.index
+                index = index.index,
+                sentence::value.name,
             )
             tf shouldBe 1.0 / sentenceTokens.size
         }
@@ -33,7 +34,8 @@ class TfIdfTest : DescribeSpec({
                 term = "toto",
                 docId = sentence.line,
                 docLength = sentenceTokens.size,
-                index = index.index
+                index = index.index,
+                sentence::value.name,
             )
             tf shouldBe 0.0
         }
@@ -48,7 +50,8 @@ class TfIdfTest : DescribeSpec({
                 term = "michael",
                 docId = sentence.line + 1,
                 docLength = sentenceTokens.size,
-                index = index.index
+                index = index.index,
+                sentence::value.name,
             )
             tf shouldBe 0.0
         }
@@ -61,7 +64,7 @@ class TfIdfTest : DescribeSpec({
                 add(Sentence(line = 1, "Michael have you received my email?"))
             }
 
-            val freq = documentFrequency("michael", index.index)
+            val freq = documentFrequency("michael", index.index, Sentence::value.name)
             freq shouldBe 2
         }
 
@@ -71,7 +74,7 @@ class TfIdfTest : DescribeSpec({
                 add(Sentence(line = 1, "Michael have you received my email?"))
             }
 
-            val freq = documentFrequency("toto", index.index)
+            val freq = documentFrequency("toto", index.index, Sentence::value.name)
             freq shouldBe 0
         }
     }
