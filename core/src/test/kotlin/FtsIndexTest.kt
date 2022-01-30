@@ -79,12 +79,7 @@ class FtsIndexTest : DescribeSpec({
             val books = generateBooks().take(10).toList()
             books.forEach { fts.add(it) }
 
-            val docIds = fts.index.values
-                .flatMap { propDocs -> propDocs.values }
-                .flatMap { docFreqs -> docFreqs.keys }
-                .toSet()
-
-            docIds shouldContainExactlyInAnyOrder books.map { b -> b.id }
+            fts.docs shouldContainExactlyInAnyOrder books.map { b -> b.id }
         }
 
         it("should throw an error when adding a document with no '@Id' annotated element") {

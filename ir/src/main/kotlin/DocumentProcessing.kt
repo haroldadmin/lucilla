@@ -80,3 +80,80 @@ public fun <T : Any> extractProperties(doc: T): List<KProperty<String>> {
 public fun extractTokens(data: String, pipeline: Pipeline): List<String> {
     return pipeline.process(data)
 }
+
+/**
+ * Extracts the property-wise [Posting]s for each token in the given document.
+ *
+ * @param doc The document to extract token postings from
+ * @param pipeline The text processing pipeline
+ * @param docId ID of the document. Inferred from doc itself if not supplied
+ * @param docProperties Properties of the document. Inferred from the doc itself if not
+ * supplied
+ * @return Map of document terms and their posting, keyed by the document properties
+ */
+public fun <T : Any> extractPostings(
+    doc: T,
+    pipeline: Pipeline,
+    docId: Int = extractDocumentId(doc),
+    docProperties: List<KProperty<String>> = extractProperties(doc),
+): Map<String, Posting> {
+    val result = mutableMapOf<String, Posting>()
+    for (prop in docProperties) {
+        val propName = prop.name
+        val propValue = prop.call(doc)
+        val propTokens = extractTokens(propValue, pipeline)
+
+        val postings = calculateTokenPostings(docId, propName, propTokens)
+        result.putAll(postings)
+    }
+
+    return result
+}
+
+/**
+ * Calculates the [Posting] for each token in the given list.
+ *
+ * This function assumes that the list of tokens passed to it has not been
+ * de-duplicated of repeated tokens.
+ *
+ * Example:
+ * - Input:
+ * ```
+ * docId : 1
+ * tokens : ["and", "its", "lights", "out", "and", "away", "we", "go"]
+ * ```
+ *
+ * - Output:
+ * ```json
+ * {
+ *   "and": {
+ *     "docId": 1,
+ *     "offsets": [0, 4],
+ *   },
+ *   "its": {
+ *     "docId": 1,
+ *     "offsets": [1],
+ *    }
+ *   ...
+ * }
+ * ```
+ *
+ * @param tokens The list of tokens to calculate postings for
+ * @return Tokens mapped to their postings
+ */
+internal fun calculateTokenPostings(docId: Int, propName: String, tokens: List<String>): Map<String, Posting> {
+    val tokenPositions = mutableMapOf<String, MutableList<Int>>()
+    for ((index, token) in tokens.withIndex()) {
+        val positions = tokenPositions[token] ?: mutableListOf()
+        positions.add(index)
+        tokenPositions[token] = positions
+    }
+
+    val postings = mutableMapOf<String, Posting>()
+    for ((token, positions) in tokenPositions) {
+        val posting = Posting(docId, propName, tokens.size, positions)
+        postings[token] = posting
+    }
+
+    return postings
+}
