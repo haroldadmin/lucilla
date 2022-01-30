@@ -8,6 +8,8 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.maps.shouldContainKey
+import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
 class DocumentProcessingTest : DescribeSpec({
@@ -127,6 +129,75 @@ class DocumentProcessingTest : DescribeSpec({
             val pipeline = Pipeline.of({ input -> input })
             val tokens = extractTokens("El Plan", pipeline)
             tokens shouldContainExactly listOf("El Plan")
+        }
+    }
+
+    describe("extractPostings") {
+        val pipeline = Pipeline.of({ input ->
+            input.map { it.split(" ") }.flatten()
+        })
+
+        it("should return an empty postings for doc with no strings") {
+            // No text properties
+            data class Doc(@Id val id: Int)
+
+            val postings = extractPostings(Doc(0), pipeline)
+            postings shouldHaveSize 0
+        }
+
+        it("should return postings for all string properties of the document") {
+            data class Doc(@Id val id: Int, val size: Int, val title: String)
+
+            val postings = extractPostings(Doc(0, 0, "Zero"), pipeline)
+
+            val props = postings.map { (_, posting) -> posting.property }.distinct()
+            props shouldContainExactly listOf("title")
+        }
+
+        it("should return a posting for each token") {
+            data class Doc(@Id val id: Int, val title: String)
+
+            val doc = Doc(0, "how to build a car")
+            val postings = extractPostings(doc, pipeline)
+
+            val expectedTokens = pipeline.process(doc.title).distinct()
+            postings shouldHaveSize expectedTokens.size
+
+            for (expectedToken in expectedTokens) {
+                postings shouldContainKey expectedToken
+            }
+        }
+
+        it("should return the correct posting for each token") {
+            data class Doc(@Id val id: Int, val title: String)
+
+            val doc = Doc(0, "how to build a car")
+            val postings = extractPostings(doc, pipeline)
+
+            postings["how"]?.docId shouldBe doc.id
+            postings["how"]?.offsets shouldBe listOf(0)
+        }
+    }
+
+    describe("calculateTokenPostings") {
+        val pipeline = Pipeline.of({ input -> input.map { it.split(" ") }.flatten() })
+
+        it("should return empty postings for empty input") {
+            val postings = calculateTokenPostings(0, "foo", emptyList())
+            postings shouldHaveSize 0
+        }
+
+        it("should return correct postings for each token") {
+            val string = "a day late and a dollar short"
+            val tokens = pipeline.process(string)
+            val postings = calculateTokenPostings(0, "foo", tokens)
+
+            postings shouldHaveSize tokens.distinct().size
+            for (token in tokens) {
+                val expectedCount = tokens.count { it == token }
+                postings[token]?.offsets?.size shouldBe expectedCount
+                postings[token]?.propertyLength shouldBe tokens.size
+            }
         }
     }
 })
