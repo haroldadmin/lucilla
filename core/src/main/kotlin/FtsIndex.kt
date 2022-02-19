@@ -279,7 +279,7 @@ public class FtsIndex<DocType : Any>(
             .fold(mutableListOf<AutocompleteSuggestion>()) { suggestions, prefixKey ->
                 val score = ld(query, prefixKey).toDouble() / prefixKey.length
                 val suggestion = AutocompleteSuggestion(score, prefixKey)
-                suggestions.apply { add(suggestion)}
+                suggestions.apply { add(suggestion) }
             }
 
         suggestions.sortByDescending { it.score }

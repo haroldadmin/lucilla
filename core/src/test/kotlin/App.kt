@@ -14,7 +14,7 @@ fun main() {
 
     println("s: search, a: autocompletion suggestions")
     when (readln().trim().lowercase()) {
-        "s"-> search(index, books)
+        "s" -> search(index, books)
         "a" -> autocomplete(index, books)
         else -> println("Invalid input")
     }
@@ -23,7 +23,7 @@ fun main() {
 fun search(index: FtsIndex<Book>, data: Map<Int, Book>) {
     println("Search")
     println("Enter search query (EXIT to stop)")
-    while(true) {
+    while (true) {
         val query = readln()
         if (query == "EXIT") {
             break
@@ -44,7 +44,7 @@ fun search(index: FtsIndex<Book>, data: Map<Int, Book>) {
 fun autocomplete(index: FtsIndex<Book>, data: Map<Int, Book>) {
     println("Autocomplete Suggestions")
     println("Enter search query (EXIT TO STOP)")
-    while(true) {
+    while (true) {
         val query = readln()
         if (query == "EXIT") {
             break
