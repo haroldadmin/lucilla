@@ -1,5 +1,6 @@
 package com.haroldadmin.lucilla.core
 
+import com.haroldadmin.lucilla.core.rank.ld
 import com.haroldadmin.lucilla.core.rank.tfIdf
 import com.haroldadmin.lucilla.ir.Posting
 import com.haroldadmin.lucilla.ir.extractDocumentId
@@ -30,6 +31,11 @@ public data class SearchResult(
      * this search result
      */
     val matchTerm: String,
+)
+
+public data class AutocompleteSuggestion(
+    val score: Double,
+    val suggestion: String,
 )
 
 /**
@@ -239,8 +245,46 @@ public class FtsIndex<DocType : Any>(
             }
         }
 
-        results.sortByDescending { result -> result.score }
+        results.sortBy { result -> result.score }
         return results
+    }
+
+    /**
+     * Fetches autocompletion suggestions for the given query.
+     *
+     * An autocompletion suggestion is a term present in the index that
+     * has the same prefix as the given search query. The results are sorted
+     * in order of their relevance score.
+     * e.g. "foo" -> "fool", "foot", "football"
+     *
+     * **Autocompletion suggestions can be unexpected if stemming is a part
+     * of your text processing pipeline.**
+     *
+     * For example, the Porter stemmer stems "football" to "footbal". Therefore,
+     * even if your input text contains the word "football", you will see "footbal"
+     * as an autocompletion suggestion instead.
+     *
+     * The simplest way around this is to use a [Pipeline] that does not contain
+     * a stemming step. Alternatively you can use a custom stemmer that emits
+     * both the original word and its stemmed variant to ensure the original
+     * word appears in the suggestions.
+     *
+     * *Expect the autocompletion ranking algorithm to change in future releases*
+     *
+     * @param query The search query to fetch autocompletion suggestions for
+     * @return List of autocompletion suggestions, sorted by their scores
+     */
+    public fun autocomplete(query: String): List<AutocompleteSuggestion> {
+        val suggestions = _index.prefixMap(query).keys
+            .fold(mutableListOf<AutocompleteSuggestion>()) { suggestions, prefixKey ->
+                val score = ld(query, prefixKey).toDouble() / prefixKey.length
+                val suggestion = AutocompleteSuggestion(score, prefixKey)
+                suggestions.apply { add(suggestion)}
+            }
+
+        suggestions.sortByDescending { it.score }
+
+        return suggestions
     }
 
     /**
