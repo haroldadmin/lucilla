@@ -125,4 +125,21 @@ class FtsIndexTest : DescribeSpec({
             fts.search("test") shouldHaveSize 0
         }
     }
+
+    context("Autocomplete suggestions") {
+        it("should return zero results if there are no matches") {
+            val index = useFts<Book>()
+            val results = index.autocomplete("foo")
+            results shouldHaveSize 0
+        }
+
+        it("should return matching results") {
+            val index = useFts<Sentence>()
+            index.add(Sentence(0, "football"))
+            index.add(Sentence(1, "foil"))
+
+            val results = index.autocomplete("fo")
+            results shouldHaveSize 2
+        }
+    }
 })

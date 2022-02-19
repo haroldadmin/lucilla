@@ -12,17 +12,47 @@ fun main() {
     }
     println("index:complete ($timeToBuildIndex ms)")
 
-    do {
-        println("Enter search query (EXIT to stop)")
+    println("s: search, a: autocompletion suggestions")
+    when (readln().trim().lowercase()) {
+        "s" -> search(index, books)
+        "a" -> autocomplete(index, books)
+        else -> println("Invalid input")
+    }
+}
+
+fun search(index: FtsIndex<Book>, data: Map<Int, Book>) {
+    println("Search")
+    println("Enter search query (EXIT to stop)")
+    while (true) {
         val query = readln()
+        if (query == "EXIT") {
+            break
+        }
+
         println("Searching for '$query'")
-        var results: List<SearchResult>
+        val results: List<SearchResult>
         val searchTime = measureTimeMillis { results = index.search(query) }
         println("${results.size} results, $searchTime ms")
 
         results.forEachIndexed { i, result ->
-            val book = books[result.documentId]!!
+            val book = data[result.documentId]!!
             println("$i\t(${result.score}, ${result.matchTerm})\t${book.title}, ${book.author}")
         }
-    } while (query != "EXIT")
+    }
+}
+
+fun autocomplete(index: FtsIndex<Book>, data: Map<Int, Book>) {
+    println("Autocomplete Suggestions")
+    println("Enter search query (EXIT TO STOP)")
+    while (true) {
+        val query = readln()
+        if (query == "EXIT") {
+            break
+        }
+
+        println("Suggestions for '$query'")
+        val suggestions: List<AutocompleteSuggestion>
+        val searchTime = measureTimeMillis { suggestions = index.autocomplete(query) }
+        println("($searchTime ms) ${suggestions.joinToString { it.suggestion }}")
+    }
 }
