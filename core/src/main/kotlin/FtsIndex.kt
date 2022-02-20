@@ -2,41 +2,10 @@ package com.haroldadmin.lucilla.core
 
 import com.haroldadmin.lucilla.core.rank.ld
 import com.haroldadmin.lucilla.core.rank.tfIdf
-import com.haroldadmin.lucilla.ir.Posting
-import com.haroldadmin.lucilla.ir.extractDocumentId
-import com.haroldadmin.lucilla.ir.extractPostings
-import com.haroldadmin.lucilla.ir.extractProperties
-import com.haroldadmin.lucilla.ir.extractTokens
+import com.haroldadmin.lucilla.ir.*
 import com.haroldadmin.lucilla.pipeline.Pipeline
 import org.apache.commons.collections4.Trie
 import org.apache.commons.collections4.trie.PatriciaTrie
-
-/**
- * Result of a search query
- */
-public data class SearchResult(
-    /**
-     * ID of the matched document
-     */
-    val documentId: Int,
-
-    /**
-     * Score of the match. Higher score implies a better
-     * match.
-     */
-    val score: Double,
-
-    /**
-     * The fragment of the search query that matched against
-     * this search result
-     */
-    val matchTerm: String,
-)
-
-public data class AutocompleteSuggestion(
-    val score: Double,
-    val suggestion: String,
-)
 
 /**
  * Alias for a token in a document
@@ -231,13 +200,43 @@ public class FtsIndex<DocType : Any>(
             return emptyList()
         }
 
-        val queryTokens = mutableSetOf(query)
-        queryTokens.addAll(pipeline.process(query))
+        return search(buildQuery(query))
+    }
+
+    /**
+     * Searches the FTS index for results matching the given [SearchQuery].
+     *
+     * Runs the query text through the processing pipeline to extract
+     * tokens from it, and uses them to search the index. Returns the results
+     * in matching order of relevance.
+     *
+     * @param query Complex search query
+     * @return Search results for the query ordered by relevance
+     */
+    public fun search(query: SearchQuery): List<SearchResult> {
+        if (query.text.isBlank()) {
+            return emptyList()
+        }
+
+        if (query.selectProps != null && query.selectProps.isEmpty()) {
+            return emptyList()
+        }
+
+        val queryTokens = mutableSetOf(query.text)
+        queryTokens.addAll(pipeline.process(query.text))
 
         val results = mutableListOf<SearchResult>()
         for (queryToken in queryTokens) {
             val postingList = _index[queryToken] ?: continue
-            val postingListToDocs = postingList.groupBy { it.docId }
+            val postingListToDocs = postingList
+                .filter { posting ->
+                    if (query.selectProps == null) {
+                        true
+                    } else {
+                        query.selectProps.contains(posting.property)
+                    }
+                }
+                .groupBy { it.docId }
             for ((docId, docPostingList) in postingListToDocs) {
                 val score = score(docPostingList)
                 val result = SearchResult(docId, score, queryToken)
