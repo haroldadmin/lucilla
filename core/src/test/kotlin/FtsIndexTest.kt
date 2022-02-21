@@ -4,6 +4,7 @@ import com.haroldadmin.lucilla.annotations.Id
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
@@ -140,6 +141,81 @@ class FtsIndexTest : DescribeSpec({
 
             val results = index.autocomplete("fo")
             results shouldHaveSize 2
+        }
+    }
+
+    context("Select Props") {
+        it("should return zero results if no props are selected") {
+            val data = generateBooks().take(10).toList()
+            val index = useFts(data)
+
+            val queryText = data.first().title.split(" ").first()
+            val query = buildQuery(queryText) {
+                select()
+            }
+
+            val results = index.search(query)
+            results shouldHaveSize 0
+        }
+
+        it("should return results for all props if props aren't explicitly selected") {
+            val data = generateBooks().take(10).toList()
+            val index = useFts(data)
+
+            val (_, title, author) = data.first()
+            val titleResults = index.search(buildQuery(title))
+            val authorResults = index.search(buildQuery(author))
+
+            titleResults shouldHaveAtLeastSize 1
+            authorResults shouldHaveAtLeastSize 1
+        }
+
+        it("should return results only for selected props") {
+            val data = generateBooks().take(10).toList()
+            val index = useFts(data)
+
+            val (_, title, author) = data.first()
+            val titleResults = index.search(
+                buildQuery(title) {
+                    select(Book::title)
+                }
+            )
+            val authorResults = index.search(
+                buildQuery(author) {
+                    select(Book::title)
+                }
+            )
+
+            titleResults shouldHaveAtLeastSize 1
+            authorResults shouldHaveSize 0
+        }
+
+        it("should return no results if selected props are ignored") {
+            val data = generateBooks().take(10).toList()
+            val index = useFts(data)
+
+            val ignoredField = data.first().publisher
+            val results = index.search(
+                buildQuery(ignoredField) {
+                    select(Book::publisher)
+                }
+            )
+
+            results shouldHaveSize 0
+        }
+
+        it("should return no results if selected props don't belong to the index data type") {
+            val data = generateBooks().take(10).toList()
+            val index = useFts(data)
+
+            val (_, title) = data.first()
+            val results = index.search(
+                buildQuery(title) {
+                    select(Sentence::value)
+                }
+            )
+
+            results shouldHaveSize 0
         }
     }
 })
